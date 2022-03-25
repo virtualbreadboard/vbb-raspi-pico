@@ -12,16 +12,20 @@
 
 The following **Assumes** the SDKC is installed in C:\RP2040
 
+```
 cd C:\RP2040
-git clone -b master https://github.com/virtualbreadboard/vbb-raspi-pico.git
+git clone https://github.com/virtualbreadboard/vbb-raspi-pico.git
+```
 
 ### Build 
 
+```
 cd C:\RP2020\vbb-raspi-pico
 mkdir build
 cd build
 cmake -G "NMake Makefiles" ..
 nmake
+```
 
 ### Firmware files are located in the build directory
 
@@ -34,3 +38,5 @@ C:\RP2020\vbb-raspi-pico\build\tinyML\edge-rps\ei_rp2040_firmware.uf2
 3. Hold Down Reset Button
 4. Reconnect Raspi to show boot file system
 5. Drag and drop uf2 file into boot file system
+
+  
