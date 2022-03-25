@@ -9,10 +9,14 @@
 #include "hardware/adc.h"
 #include "edge-impulse-sdk/classifier/ei_run_classifier.h"
  
-//OUTPUT STATUS 
-const int LED_PAPER       = 2;
-const int LED_ROCK        = 3;
+//OUTPUT LABEL STATES 
+const int LED_ROCK        = 2;
+const int LED_PAPER       = 3;
 const int LED_SCISSORS    = 4;
+
+//MAP INFERENCE INDEXES TO PIN INDEXES
+//const char* ei_classifier_inferencing_categories[] = { "PAPER", "ROCK", "SCISSORS" };
+int classification2gpio[] = {LED_PAPER,LED_ROCK,LED_SCISSORS};
  
 const int NO_TIMEOUT =  -1;
 
@@ -51,11 +55,11 @@ static int currentChannel(){
 /**
  * Average 8 from last 10 samples removing max/min (glitch).
  */
-static int smoothedSample(){
+static float smoothedSample(){
     
     uint16_t max ;
     uint16_t min ;
-    uint16_t sum;
+    uint16_t sum = 0;
     uint16_t sample;
 
     min = adc_read();
@@ -80,19 +84,20 @@ static int smoothedSample(){
         }
     }
 
-    sum = sum >> 3; //Average dive by 8
-    
-    return sum;
-
+    return (float)sum / 8.0f;
+  
 }
   
 static void initIO(){
 
     //3 Status and 4 DAC drivers.
-    for(int i = 0; i < 3 ; i++ ){
-        gpio_init(LED_ROCK + i);
-        gpio_set_dir(LED_ROCK + i, GPIO_OUT);
-        gpio_put(LED_ROCK + i,0);
+    
+    for(int i = 0; i < EI_CLASSIFIER_LABEL_COUNT ; i++ ){
+        int ledPin = classification2gpio[i];
+
+        gpio_init(ledPin);
+        gpio_set_dir(ledPin, GPIO_OUT);
+        gpio_put(ledPin,0);
     }
 
     //ADC Input
@@ -139,10 +144,10 @@ static void waitCLKRisingEdge(int periodMs){
 
 static float readADC(){
 
-     const float conversion_factor = 1.0f / (1 << 12);
-    uint16_t result = smoothedSample(); //adc_read();
-    //printf(" Raw value: 0x%d, Normalised: %f V\n",  result, result * conversion_factor);
-
+    const float conversion_factor = 1.0f / (1 << 12);
+    float result =  smoothedSample();  //)float) adc_read(); 
+    //printf("%f\n",   result * conversion_factor);
+ 
     return result * conversion_factor;
 
 }
@@ -176,9 +181,9 @@ static bool IsIdle(int index){
 }
 
 static void clearInference(){
-    gpio_put(LED_ROCK       ,false);
-    gpio_put(LED_PAPER      ,false);
-    gpio_put(LED_SCISSORS   ,false);
+    for(int i = 0; i < EI_CLASSIFIER_LABEL_COUNT; i++ ){
+        gpio_put(classification2gpio[i],false);
+    }
 }
 
 /*
@@ -243,15 +248,17 @@ int main(int argc, char **argv) {
     stdio_init_all();
 
     initIO();
-  
-    printf("Hello, Edgey Rock Paper Scissors Start!\n");
+    
+    sleep_ms(100);
+
+    printf("Hello Virtual Breadboard, Edgey Rock Paper Scissors Start!\n");
 
     sleep_ms(100);
  
     // Assign callback function to fill buffer used for preprocessing/inference
     signal.total_length = EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE;
     signal.get_data = &get_signal_data;
-
+ 
     while(true){
  
         captureFrame();
@@ -286,12 +293,12 @@ int main(int argc, char **argv) {
 
     // Print the prediction results (classification)
 #else
-    printf("Predictions:\r\n");
+    printf("Predictions V1.1:\r\n");
     for (uint16_t i = 0; i < EI_CLASSIFIER_LABEL_COUNT; i++) {
         printf("  %s: ", ei_classifier_inferencing_categories[i]);
         printf("%.5f\r\n", result.classification[i].value);
 
-        gpio_put(LED_ROCK + i,result.classification[i].value > 0.7f );
+        gpio_put( classification2gpio[i] ,result.classification[i].value > 0.5f );
     
     }
     sleep_ms(100);
