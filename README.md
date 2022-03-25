@@ -12,16 +12,20 @@
 
 The following **Assumes** the SDKC is installed in C:\RP2040
 
+<code>
 cd C:\RP2040
-git clone -b master https://github.com/virtualbreadboard/vbb-raspi-pico.git
+git clone https://github.com/virtualbreadboard/vbb-raspi-pico.git
+</code>
 
 ### Build 
 
+<code>
 cd C:\RP2020\vbb-raspi-pico
 mkdir build
 cd build
 cmake -G "NMake Makefiles" ..
 nmake
+</code>
 
 ### Firmware files are located in the build directory
 
