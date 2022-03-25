@@ -12,10 +12,10 @@
 
 The following **Assumes** the SDKC is installed in C:\RP2040
 
-<code>
+```
 cd C:\RP2040
 git clone https://github.com/virtualbreadboard/vbb-raspi-pico.git
-</code>
+```
 
 ### Build 
 
@@ -45,4 +45,4 @@ C:\RP2020\vbb-raspi-pico\build\tinyML\edge-rps\ei_rp2040_firmware.uf2
 4. Reconnect Raspi to show boot file system
 5. Drag and drop uf2 file into boot file system
 
-HUH
+ huh2
